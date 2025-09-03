@@ -1779,10 +1779,10 @@
           <input type="number" id="edit-rehab-rms-emg" class="form-input" step="0.01" min="0" max="100"/>
         </div>
         
-        <!-- <div>
+        <div>
           <label class="block text-sm font-semibold text-slate-300 mb-2">MAV EMG (mV)</label>
           <input type="number" id="edit-rehab-mav-emg" class="form-input" step="0.01" min="0"/>
-        </div> -->
+        </div>
       </div>
       
       <div class="flex gap-4 pt-6">
@@ -1849,6 +1849,9 @@ let isViewOnlyMode = false;
 let avgAngle = 0;
 let avgRMSEMG = 0;
 let avgMAVEMG = 0;
+
+// Menyimpan kunci data yang sedang diedit (untuk modal edit)
+let editingRehabKey = null;
 
 let romAnalysisData = {
   currentAngle: 0,
@@ -2554,6 +2557,16 @@ function updateChartsRealTimeFixed(newData) {
     
     return result.trim() || '0 detik';
   }
+
+  // Escape helper to safely embed strings inside single-quoted inline onclick
+  function escapeForOnclick(value) {
+    const str = String(value ?? '');
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, '\\'')
+      .replace(/\n/g, ' ')
+      .replace(/\r/g, ' ');
+  }
   
   function editRehabData(firebaseKey, name, session, date, angle, rmsEMG, mavEMG, duration) {
     editingRehabKey = firebaseKey;
@@ -2581,7 +2594,8 @@ function updateChartsRealTimeFixed(newData) {
     document.getElementById('edit-rehab-date').value = date || '';
     document.getElementById('edit-rehab-angle').value = cleanAngle;
     document.getElementById('edit-rehab-rms-emg').value = cleanRmsEMG;
-    document.getElementById('edit-rehab-mav-emg').value = cleanMavEMG;
+    const mavInput = document.getElementById('edit-rehab-mav-emg');
+    if (mavInput) mavInput.value = cleanMavEMG;
     document.getElementById('edit-rehab-duration').value = cleanDuration;
     
     // Debug logging after setting values
@@ -2591,7 +2605,7 @@ function updateChartsRealTimeFixed(newData) {
       date: document.getElementById('edit-rehab-date').value,
       angle: document.getElementById('edit-rehab-angle').value,
       rmsEMG: document.getElementById('edit-rehab-rms-emg').value,
-      mavEMG: document.getElementById('edit-rehab-mav-emg').value,
+      mavEMG: (document.getElementById('edit-rehab-mav-emg') || { value: '' }).value,
       duration: document.getElementById('edit-rehab-duration').value
     });
     
@@ -2611,7 +2625,7 @@ function updateChartsRealTimeFixed(newData) {
     // Safely convert form values to numbers, handling empty strings and invalid values
     const angleInput = document.getElementById('edit-rehab-angle').value;
     const rmsEMGInput = document.getElementById('edit-rehab-rms-emg').value;
-    const mavEMGInput = document.getElementById('edit-rehab-mav-emg').value;
+    const mavEMGInput = (document.getElementById('edit-rehab-mav-emg') || { value: '' }).value;
     const durationInput = document.getElementById('edit-rehab-duration').value;
     
     const angle = angleInput === '' ? 0 : parseFloat(angleInput);
@@ -3878,7 +3892,7 @@ function updateChartsRealTimeFixed(newData) {
               <td style=\"text-align: center;\" class=\"font-bold ${getGradeColor(classification.grade)}\">${classification.grade}</td>
               <td style=\"text-align: center;\">${classification.status}</td>
               <td style=\"text-align: center;\"> 
-                <button onclick=\"editRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession}, '${data.date}', ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})\" class=\"btn-warning mr-2\" style=\"padding: 4px 8px; font-size: 12px;\"> 
+                <button onclick=\"editRehabData(''+escapeForOnclick('${data.firebaseKey}'), ''+escapeForOnclick('${data.name}'), ${data.rehabSession}, ''+escapeForOnclick('${data.date}'), ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})\" class=\"btn-warning mr-2\" style=\"padding: 4px 8px; font-size: 12px;\"> 
                   <i class=\"fas fa-edit\"></i> 
                 </button> 
                 <button onclick=\"deleteRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession})\" class=\"btn-danger\" style=\"padding: 4px 8px; font-size: 12px;\"> 
@@ -4053,7 +4067,7 @@ function updateChartsRealTimeFixed(newData) {
               <td style=\"text-align: center;\" class=\"font-bold ${getGradeColor(classification.grade)}\">${classification.grade}</td>
               <td style=\"text-align: center;\">${classification.status}</td>
               <td style=\"text-align: center;\"> 
-                <button onclick=\"editRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession}, '${data.date}', ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})\" class=\"btn-warning mr-2\" style=\"padding: 4px 8px; font-size: 12px;\"> 
+                <button onclick=\"editRehabData(''+escapeForOnclick('${data.firebaseKey}'), ''+escapeForOnclick('${data.name}'), ${data.rehabSession}, ''+escapeForOnclick('${data.date}'), ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})\" class=\"btn-warning mr-2\" style=\"padding: 4px 8px; font-size: 12px;\"> 
                   <i class=\"fas fa-edit\"></i> 
                 </button> 
                 <button onclick=\"deleteRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession})\" class=\"btn-danger\" style=\"padding: 4px 8px; font-size: 12px;\"> 
@@ -5358,7 +5372,7 @@ function displayLogPage() {
             <td style="text-align: center;" class="font-bold ${getGradeColor(classification.grade)}">${classification.grade}</td>
             <td style="text-align: center;">${classification.status}</td>
             <td style="text-align: center;">
-              <button onclick="editRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession}, '${data.date}', ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})" class="btn-warning mr-2" style="padding: 4px 8px; font-size: 12px;">
+              <button onclick="editRehabData(''+escapeForOnclick('${data.firebaseKey}'), ''+escapeForOnclick('${data.name}'), ${data.rehabSession}, ''+escapeForOnclick('${data.date}'), ${data.avgAngle !== undefined && data.avgAngle !== null ? data.avgAngle : 0}, ${data.avgRMSEMG !== undefined && data.avgRMSEMG !== null ? data.avgRMSEMG : 0}, ${data.avgMAVEMG !== undefined && data.avgMAVEMG !== null ? data.avgMAVEMG : 0}, ${data.sessionDuration !== undefined && data.sessionDuration !== null ? data.sessionDuration : 0})" class="btn-warning mr-2" style="padding: 4px 8px; font-size: 12px;">
               <i class="fas fa-edit"></i>
               </button>
               <button onclick="deleteRehabData('${data.firebaseKey}', '${data.name}', ${data.rehabSession})" class="btn-danger" style="padding: 4px 8px; font-size: 12px;">
